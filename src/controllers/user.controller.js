@@ -140,7 +140,7 @@ const regenrateAccessToken = asyncHandler(async (req, res) => {
     user._id
   );
 
-  res
+  return res
     .status(200)
     .cookie("accessToken", accessToken)
     .cookie("refreshToken", newRefreshToken)
@@ -152,4 +152,28 @@ const regenrateAccessToken = asyncHandler(async (req, res) => {
       )
     );
 });
-export { loginUser, logoutUser, regenrateAccessToken, registerUser };
+const changePasword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword, _id } = req.body;
+  if (!(oldPassword && newPassword)) {
+    throw new ApiError(401, "old and new password is required");
+  }
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new ApiError(401, "invalid access");
+  }
+  if (oldPassword !== user.password) {
+    throw new ApiError(400, "password is incorrect");
+  }
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+  return res
+    .status(200)
+    .json(new ApiResponse({}, 200, "password changed successfully"));
+});
+export {
+  changePasword,
+  loginUser,
+  logoutUser,
+  regenrateAccessToken,
+  registerUser,
+};
