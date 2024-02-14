@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
+
 const productSchema = new Schema(
   {
     title: {
@@ -16,10 +17,19 @@ const productSchema = new Schema(
     images: [
       {
         type: String,
+        required: true,
       },
     ],
+    stock: {
+      type: String,
+    },
     price: {
       type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
     },
     product_ownwer: {
       type: Schema.Types.ObjectId,
