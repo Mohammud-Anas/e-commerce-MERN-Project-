@@ -260,7 +260,7 @@ const changeProductThumbnail = asyncHandler(async (req, res) => {
     );
   }
   product.thumbnail = newThumbnailUploadedImage;
-  await product.save();
+  await product.save({ validateBeforeSave: false });
   return res
     .status(200)
     .json(new ApiResponse({}, 200, "thumnail updated succesfully"));
