@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { ApiError } from "./ApiError.js";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -6,33 +7,30 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-async function uploadProductImages({ images, thumbnail }) {
+const uploadSingleImage = async (image, folderName) => {
   try {
-    if (!images && !thumbnail) return;
-    if (!Array.isArray(images)) {
-      throw new Error("Images should be an array");
-    }
-
-    const uploadPromises = images.map(async (image) => {
-      const result = await cloudinary.uploader.upload(image, {
-        folder: "product_images",
-      });
-      return result;
+    const uploadedImage = await cloudinary.uploader.upload(image, {
+      folder: `${folderName}`,
     });
-
-    const uploadedImages = await Promise.all(uploadPromises);
-
-    let uploadedThumbnail = null;
-    if (thumbnail) {
-      const thumbnailResult = await cloudinary.uploader.upload(thumbnail, {
-        folder: "product_thumbnails",
-      });
-      uploadedThumbnail = thumbnailResult;
-    }
-    return { images: uploadedImages, thumbnail: uploadedThumbnail };
+    return uploadedImage.url, uploadedImage.public_id;
   } catch (error) {
-    console.error("Error uploading product images:", error.message);
+    console.error("Error uploading image to Cloudinary:", error);
+    throw new ApiError(500, "error while uploading image to Cloudinary", error);
+  }
+};
+const uploadMultipleImages = async (images) => {
+  try {
+    if (!Array.isArray(images)) {
+      throw new ApiError(401, "Images must be provided as an array");
+    }
+    const uploadPromises = images.map(
+      async (image) => await uploadSingleImage(image)
+    );
+    const uploadedImages = await Promise.all(uploadPromises);
+    return uploadedImages;
+  } catch (error) {
+    console.error("Error uploading images to Cloudinary:", error);
     throw error;
   }
-}
-export default uploadProductImages;
+};
+export { cloudinary, uploadMultipleImages, uploadSingleImage };
