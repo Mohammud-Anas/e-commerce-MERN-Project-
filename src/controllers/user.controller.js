@@ -171,21 +171,7 @@ const changePasword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse({}, 200, "password changed successfully"));
 });
-const getProductDetails = asyncHandler(async (req, res) => {
-  const { productId } = req.params;
-  if (!productId) {
-    throw new ApiError(400, "product id is missing");
-  }
-  const product = await Product.findById(productId);
-  if (!product) {
-    throw new ApiError(400, " invalid product id");
-  }
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(product, 200, "product details fetched successfully")
-    );
-});
+
 const getUserCartItems = asyncHandler(async (req, res) => {
   const { user_id } = req.body;
   if (!user_id) {
@@ -218,9 +204,9 @@ const getUserCartItems = asyncHandler(async (req, res) => {
       new ApiResponse(cartItemsDetails, 200, "cart item fetched successfully")
     );
 });
+
 export {
   changePasword,
-  getProductDetails,
   getUserCartItems,
   loginUser,
   logoutUser,

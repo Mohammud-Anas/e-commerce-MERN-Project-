@@ -33,6 +33,7 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    userType: "buyer",
   },
   { timestamps: true }
 );
@@ -51,6 +52,7 @@ userSchema.methods.generateAccessToken = function () {
       email: this.email,
       phone: this.phone,
       fullname: this.fullname,
+      userType: this.userType,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
