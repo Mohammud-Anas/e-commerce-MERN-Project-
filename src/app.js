@@ -1,6 +1,7 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import orderRouter from "./routes/order.router.js";
 import sellerRouter from "./routes/seller.router.js";
 import userRouter from "./routes/user.router.js";
 const app = express();
@@ -18,5 +19,6 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/sellers", sellerRouter);
+app.use("/api/v1/order", orderRouter);
 
 export { app };
