@@ -11,27 +11,12 @@ import {
 
 const addProduct = asyncHandler(async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      thumbnail,
-      images,
-      stock,
-      price,
-      category,
-      sellerID,
-    } = req.body;
+    const { title, description, thumbnail, images, stock, price, category } =
+      req.body;
     if (
-      [
-        title,
-        description,
-        thumbnail,
-        images,
-        stock,
-        price,
-        category,
-        sellerID,
-      ].some((feild) => feild?.trim() === "")
+      [title, description, thumbnail, images, stock, price, category].some(
+        (feild) => feild?.trim() === ""
+      )
     ) {
       throw new ApiError(400, "All fields are required");
     }
@@ -53,13 +38,13 @@ const addProduct = asyncHandler(async (req, res) => {
       stock,
       price,
       category,
-      product_ownwer: sellerID,
+      product_ownwer: req.seller._id,
     });
 
     if (!product) {
       throw new ApiError(500, "error while adding product");
     }
-    const seller = await Seller.findById(sellerID);
+    const seller = await Seller.findById(req.seller._id);
     if (!seller) {
       throw new ApiError(401, "unauthorized request ");
     }
