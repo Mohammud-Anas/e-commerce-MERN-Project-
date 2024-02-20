@@ -8,6 +8,6 @@ import {
 const router = new Router();
 router.router("/allorders").get(getAllOrders);
 router.router("/updateOrder").patch(updateOrder);
-router.router("/cancelOrder").get(cancelOrder);
-router.router("/placeOrder").get(createOrder);
+router.router("/cancelOrder/:orderId").post(cancelOrder);
+router.router("/placeOrder").post(createOrder);
 export default router;
