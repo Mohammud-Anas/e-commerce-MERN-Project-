@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { Product } from "../models/product.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -172,38 +171,38 @@ const changePasword = asyncHandler(async (req, res) => {
     .json(new ApiResponse({}, 200, "password changed successfully"));
 });
 
-const getUserCartItems = asyncHandler(async (req, res) => {
-  const { user_id } = req.body;
-  if (!user_id) {
-    throw new ApiError(404, "User's cart not found");
-  }
-  const cartItem = await User.aggregate([
-    {
-      $match: {
-        _id: user_id,
-      },
-    },
-    {
-      $lookup: {
-        from: "carts",
-        as: "cartItems",
-        localField: "_id",
-        foreignField: "added_by",
-      },
-    },
-  ]);
-  if (!cartItem) {
-    throw new ApiError(401, "your cart is empty");
-  }
-  const cartItemsDetails = cartItem.map(async (item) => {
-    return await Product.findById(item.product);
-  });
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(cartItemsDetails, 200, "cart item fetched successfully")
-    );
-});
+// const getUserCartItems = asyncHandler(async (req, res) => {
+//   const { user_id } = req.body;
+//   if (!user_id) {
+//     throw new ApiError(404, "User's cart not found");
+//   }
+//   const cartItem = await User.aggregate([
+//     {
+//       $match: {
+//         _id: user_id,
+//       },
+//     },
+//     {
+//       $lookup: {
+//         from: "carts",
+//         as: "cartItems",
+//         localField: "_id",
+//         foreignField: "added_by",
+//       },
+//     },
+//   ]);
+//   if (!cartItem) {
+//     throw new ApiError(401, "your cart is empty");
+//   }
+//   const cartItemsDetails = cartItem.map(async (item) => {
+//     return await Product.findById(item.product);
+//   });
+//   return res
+//     .status(200)
+//     .json(
+//       new ApiResponse(cartItemsDetails, 200, "cart item fetched successfully")
+//     );
+// });
 
 export {
   changePasword,
