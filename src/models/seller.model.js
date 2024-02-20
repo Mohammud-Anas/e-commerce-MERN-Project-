@@ -42,6 +42,7 @@ const sellerSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    userType: "seller",
   },
   {
     timestamps: true,
@@ -61,6 +62,7 @@ sellerSchema.methods.generateAccessToken = function () {
       email: this.email,
       phoneNumber: this.phoneNumber,
       ownerName: this.ownerName,
+      userType: this.userType,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

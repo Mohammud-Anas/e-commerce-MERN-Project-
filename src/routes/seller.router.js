@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { verify } from "jsonwebtoken";
 import {
   changePasword,
   loginSeller,
@@ -7,8 +8,8 @@ import {
 } from "../controllers/seller.controller.js";
 const sellerRouter = Router();
 sellerRouter.route("/register").post(registerSeller);
-sellerRouter.route("/logout").post(logoutSeller);
+sellerRouter.route("/logout").post(verify, logoutSeller);
 sellerRouter.route("/login").post(loginSeller);
-sellerRouter.route("/changePassword").post(changePasword);
+sellerRouter.route("/changePassword").post(verify, changePasword);
 sellerRouter.route("/addProducts").post();
 export default sellerRouter;
