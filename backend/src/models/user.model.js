@@ -33,7 +33,6 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
-    userType: "buyer",
   },
   { timestamps: true }
 );

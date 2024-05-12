@@ -206,7 +206,6 @@ const changePasword = asyncHandler(async (req, res) => {
 
 export {
   changePasword,
-  getUserCartItems,
   loginUser,
   logoutUser,
   regenrateAccessToken,

@@ -4,10 +4,10 @@ import {
   createOrder,
   getAllOrders,
   updateOrder,
-} from "../controllers/order.controller";
+} from "../controllers/order.controller.js";
 const router = new Router();
-router.router("/allorders").get(getAllOrders);
-router.router("/updateOrder").patch(updateOrder);
-router.router("/cancelOrder/:orderId").post(cancelOrder);
-router.router("/placeOrder").post(createOrder);
+router.route("/allorders").get(getAllOrders);
+router.route("/updateOrder").patch(updateOrder);
+router.route("/cancelOrder/:orderId").post(cancelOrder);
+router.route("/placeOrder").post(createOrder);
 export default router;

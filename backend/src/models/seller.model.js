@@ -42,7 +42,6 @@ const sellerSchema = new Schema(
     refreshToken: {
       type: String,
     },
-    userType: "seller",
   },
   {
     timestamps: true,
