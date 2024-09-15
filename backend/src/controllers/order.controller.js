@@ -1,5 +1,4 @@
 import { Order } from "../models/order.model.js";
-import { Product } from "../models/product.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -9,19 +8,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     const { userId, sellerId } = req.body;
 
     if (userId) {
-      const orders = await Order.aggregate([
-        {
-          $match: { user: userId },
-        },
-        {
-          $lookup: {
-            from: "products",
-            localField: "product",
-            foreignField: "_id",
-            as: "productDetails",
-          },
-        },
-      ]);
+      const orders = await Order.find({ userId: userId });
       if (orders.length <= 0) {
         return res
           .status(200)
@@ -31,29 +18,6 @@ const getAllOrders = asyncHandler(async (req, res) => {
       return res
         .status(200)
         .json(new ApiResponse(orders, 200, "orders fetched successfully"));
-    } else if (sellerId) {
-      const products = await Product.find({ product_ownwer: sellerId });
-      if (products.length === 0) {
-        throw new ApiError(404, "products not found of seller");
-      }
-      const productIds = products.map((product) => product._id);
-      const orders = await Order.aggregate([
-        { $match: { product: { $in: productIds } } },
-        {
-          $lookup: {
-            from: "products",
-            localField: "product",
-            foreignField: "_id",
-            as: "productDetails",
-          },
-        },
-      ]);
-
-      res
-        .status(200)
-        .json(new ApiResponse(orders, 200, "orders fetched successfully"));
-    } else {
-      throw new ApiError(400, "userId or sellerId is required");
     }
   } catch (error) {
     console.log(error);
@@ -62,17 +26,19 @@ const getAllOrders = asyncHandler(async (req, res) => {
 });
 const createOrder = asyncHandler(async (req, res) => {
   try {
-    const { userId, productId, quantity, payment } = req.body;
+    const { userId, customerInfo, product, totalAmount, payment } = req.body;
+    console.log(req.body);
     if (!userId) {
       throw new ApiError(401, "userId is required");
     }
-    if (!productId) {
-      throw new ApiError(401, "productId is required");
+    if (!product || product.length === 0) {
+      throw new ApiError(401, "product is required");
     }
     const newOrder = await Order.create({
-      user: userId,
-      product: productId,
-      quantity,
+      userId,
+      customer: { ...customerInfo },
+      product,
+      totalAmount,
       payment,
     });
     if (!newOrder) {
@@ -83,7 +49,7 @@ const createOrder = asyncHandler(async (req, res) => {
       .json(new ApiResponse(newOrder, 200, "order created successfully"));
   } catch (error) {
     console.log(error);
-    throw new ApiError(500, "error creating order");
+    return res.status(500).json(new ApiError(500, "error creating order"));
   }
 });
 const updateOrder = asyncHandler(async (req, res) => {

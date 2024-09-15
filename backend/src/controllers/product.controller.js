@@ -3,62 +3,133 @@ import { Seller } from "../models/seller.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import {
-  cloudinary,
-  uploadMultipleImages,
-  uploadSingleImage,
-} from "../utils/cloudinary.js";
+import { cloudinary, uploadSingleImage } from "../utils/cloudinary.js";
 
 const addProduct = asyncHandler(async (req, res) => {
   try {
-    const { title, description, thumbnail, images, stock, price, category } =
+    const { title, description, stock, price, category, product_owner } =
       req.body;
-    if (
-      [title, description, thumbnail, images, stock, price, category].some(
-        (feild) => feild?.trim() === ""
-      )
-    ) {
+    console.log(req.body);
+    const trimmedFields = [
+      String(title).trim(),
+      String(description).trim(),
+
+      String(stock).trim(),
+      String(price).trim(),
+      String(category).trim(),
+      String(product_owner).trim(),
+    ];
+
+    if (trimmedFields.some((field) => field === "")) {
       throw new ApiError(400, "All fields are required");
     }
+    console.log("ye h product id");
+    console.log(product_owner);
+    console.log(req.body); // output json object but with no files
+    console.log("hello ye h files");
+    console.log(req.files); // output: undefined
+    console.log("hello ye h files");
+    const thumbnailFile = await req.files["thumbnail"][0];
+    const imageFiles = await req.files["images"];
+    console.log(thumbnailFile);
+    console.log(imageFiles);
+    if (!thumbnailFile) {
+      throw new ApiError(400, "thumbnail is required");
+    }
+    if (!imageFiles) {
+      throw new ApiError(400, "images are required");
+    }
 
-    const { uploadedImage } = await uploadSingleImage(
-      thumbnail,
+    const seller = await Seller.findById(product_owner).exec();
+    if (!seller) {
+      throw new ApiError(401, "unauthorized request product seller not found");
+    }
+    const uploadedThumbnail = await uploadSingleImage(
+      thumbnailFile.path,
       "product_thumbnail"
     );
-    const { uploadedImages } = await uploadMultipleImages(
-      images,
+    const uploadedImages = await uploadMultipleImages(
+      imageFiles.map((file) => file.path),
       "product_images"
     );
 
     const product = await Product.create({
       title,
       description,
-      thumbnail: uploadedImage,
-      images: uploadedImages,
+      thumbnail: uploadedThumbnail.url,
+      images: uploadedImages.map((img) => img.url),
       stock,
       price,
       category,
-      product_ownwer: req.seller._id,
+      product_owner,
     });
 
     if (!product) {
       throw new ApiError(500, "error while adding product");
     }
-    const seller = await Seller.findById(req.seller._id);
-    if (!seller) {
-      throw new ApiError(401, "unauthorized request ");
-    }
-
+    console.log(product);
     await seller.products.push(product._id);
     await seller.save();
+    console.log("product added successfully");
     return res
       .status(200)
       .json(new ApiResponse(product, 200, "product added successfully"));
   } catch (error) {
     console.log(error);
-    throw new ApiError(401, error?.message || "Internal server error");
+    // throw new ApiError(401, error?.message || "Internal server error");
+    return res
+      .status(500)
+      .json(new ApiError(401, error.message || "internal server error"));
   }
 });
+
+// const addProduct = asyncHandler(async (req, res) => {
+//   try {
+//     const {
+//       title,
+//       description,
+//       stock,
+//       price,
+//       category,
+//       product_owner,
+//       images,
+//       thumbnail,
+//     } = req.body;
+
+//     const seller = await Seller.findById(product_owner).exec();
+//     if (!seller) {
+//       throw new ApiError(401, "unauthorized request product seller not found");
+//     }
+
+//     const product = await Product.create({
+//       title,
+//       description,
+//       thumbnail: thumbnail,
+//       images: images.map((img) => img),
+//       stock,
+//       price,
+//       category,
+//       product_owner,
+//     });
+
+//     if (!product) {
+//       throw new ApiError(500, "error while adding product");
+//     }
+//     console.log(product);
+//     await seller.products.push(product._id);
+//     await seller.save();
+//     console.log("product added successfully");
+//     return res
+//       .status(200)
+//       .json(new ApiResponse(product, 200, "product added successfully"));
+//   } catch (error) {
+//     console.log(error);
+//     // throw new ApiError(401, error?.message || "Internal server error");
+//     return res
+//       .status(500)
+//       .json(new ApiError(401, error.message || "internal server error"));
+//   }
+// });
 const deleteProduct = asyncHandler(async (req, res) => {
   try {
     const { product_id } = req.body;
@@ -174,59 +245,104 @@ const getProductDetails = asyncHandler(async (req, res) => {
     );
 });
 const searchProducts = asyncHandler(async (req, res) => {
-  const {
-    query,
-    price,
-    category,
-    minPrice,
-    maxPrice,
-    sortBy,
-    sortOrder,
-    page,
-    limit,
-  } = req.body;
-  let baseQuery = {};
-  if (query) {
-    baseQuery.title = { $regex: query, $options: "i" };
-    baseQuery.description = { $regex: query, $options: "i" };
-    baseQuery.category = { $regex: query, $options: "i" };
-  }
-  if (price) {
-    baseQuery.price = { $regex: query, $options: "i" };
-  }
+  ``;
+  try {
+    const {
+      query,
+      price,
+      category,
+      minPrice,
+      maxPrice,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+    } = await req.body;
+    console.log(req.body);
+    let baseQuery = {};
+    if (query) {
+      baseQuery.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } },
+      ];
+    }
+    if (price) {
+      baseQuery.price = { $regex: query, $options: "i" };
+    }
 
-  if (category) {
-    baseQuery.category = { $regex: query, $options: "i" };
-  }
+    if (category) {
+      baseQuery.category = { $regex: query, $options: "i" };
+    }
 
-  if (minPrice && maxPrice) {
-    baseQuery.price = { $gte: minPrice, $lte: maxPrice };
-  } else if (minPrice) {
-    baseQuery.price = { $gte: minPrice };
-  } else if (maxPrice) {
-    baseQuery.price = { $lte: maxPrice };
-  }
+    if (minPrice || maxPrice) {
+      baseQuery.price = {};
+      if (minPrice) baseQuery.price.$gte = minPrice;
+      if (maxPrice) baseQuery.price.$lte = maxPrice;
+    }
 
-  let sortOptions = {};
-  if (sortBy) {
-    sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
-  }
-  page = parseInt(page) || 1;
-  limit = parseInt(limit) || 10;
-  const skip = (page - 1) * limit;
+    let sortOptions = {};
+    if (sortBy) {
+      // Sort by `priceNumeric` if price sorting is requested
+      const sortField = sortBy === "price" ? "priceNumeric" : sortBy;
+      sortOptions[sortField] = sortOrder === "desc" ? -1 : 1;
+    }
+    let pageParams = parseInt(page) || 1;
+    let limitParams = parseInt(limit) || 10;
+    const skip = (pageParams - 1) * limitParams;
 
-  const products = await Product.find({
-    $or: [baseQuery],
-  })
-    .sort(sortOptions)
-    .skip(skip)
-    .limit(limit);
-  if (!products) {
-    throw new ApiError(404, "Product not found");
+    const aggregationPipeline = [
+      {
+        $addFields: {
+          priceNumeric: {
+            $convert: {
+              input: {
+                $replaceAll: {
+                  input: {
+                    $replaceAll: {
+                      input: {
+                        $replaceAll: {
+                          input: "$price", // Remove the dollar sign
+                          find: "\\ $", // Escape dollar sign
+                          replacement: "", // Remove dollar sign
+                        },
+                      },
+                      find: "₹", // Remove the rupee symbol
+                      replacement: "", // Remove rupee symbol
+                    },
+                  },
+                  find: ",", // Remove commas in prices (e.g., "1,000")
+                  replacement: "", // Replace commas with empty string
+                },
+              },
+              to: "double", // Convert the cleaned string to double
+              onError: 0, // Default value if conversion fails
+              onNull: 0, // Default value if field is null
+            },
+          },
+        },
+      },
+      { $match: baseQuery }, // Match based on base query
+      { $skip: skip }, // Pagination: skip records
+      { $limit: limitParams }, // Limit the number of records
+    ];
+    if (Object.keys(sortOptions).length > 0) {
+      aggregationPipeline.splice(2, 0, { $sort: sortOptions });
+    }
+    const products = await Product.aggregate(aggregationPipeline);
+
+    if (products.lenght === 0) {
+      throw new ApiError(404, "Product not found");
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(products, 200, "products searched successfully"));
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(404)
+      .json(new ApiError(404, error.message || "internal server error"));
   }
-  return res
-    .status(200)
-    .json(new ApiResponse(products, 200, "products searched successfully"));
 });
 const changeProductThumbnail = asyncHandler(async (req, res) => {
   const { newThumnailImage, oldThumbnailPublicId, productId } = req.body;
