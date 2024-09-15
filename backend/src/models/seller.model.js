@@ -4,7 +4,7 @@ import mongoose, { Schema } from "mongoose";
 
 const sellerSchema = new Schema(
   {
-    storename: {
+    company: {
       required: true,
       type: String,
     },
@@ -16,7 +16,7 @@ const sellerSchema = new Schema(
       required: true,
       type: Number,
     },
-    ownerName: {
+    sellername: {
       type: String,
     },
 
@@ -42,6 +42,10 @@ const sellerSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    userType: {
+      type: String,
+      default: "Seller",
+    },
   },
   {
     timestamps: true,
@@ -60,7 +64,7 @@ sellerSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       phoneNumber: this.phoneNumber,
-      ownerName: this.ownerName,
+      sellername: this.sellername,
       userType: this.userType,
     },
     process.env.ACCESS_TOKEN_SECRET,

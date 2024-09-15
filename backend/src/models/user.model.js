@@ -15,7 +15,7 @@ const userSchema = new Schema(
     },
     phone: {
       required: true,
-      type: Number,
+      type: String,
       unique: true,
     },
     address: {
@@ -32,6 +32,10 @@ const userSchema = new Schema(
     },
     refreshToken: {
       type: String,
+    },
+    userType: {
+      type: String,
+      default: "General",
     },
   },
   { timestamps: true }
