@@ -38,6 +38,7 @@ const verifyJwt = asyncHandler(async (req, _, next) => {
     }
   } catch (error) {
     console.log(error);
+
     throw new ApiError(500, "error while verifying access token");
   }
 });
