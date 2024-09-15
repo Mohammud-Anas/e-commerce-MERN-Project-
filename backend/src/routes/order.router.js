@@ -6,8 +6,8 @@ import {
   updateOrder,
 } from "../controllers/order.controller.js";
 const router = new Router();
-router.route("/allorders").get(getAllOrders);
+router.route("/allorders").post(getAllOrders);
 router.route("/updateOrder").patch(updateOrder);
 router.route("/cancelOrder/:orderId").post(cancelOrder);
-router.route("/placeOrder").post(createOrder);
+router.route("/createOrder").post(createOrder);
 export default router;

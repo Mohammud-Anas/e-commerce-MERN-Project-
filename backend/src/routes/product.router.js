@@ -8,15 +8,19 @@ import {
   getProductDetails,
   searchProducts,
   updateProductDetails,
-} from "../controllers/product.controller";
-import { verifyJwt } from "../middlewares/auth.middlware";
+} from "../controllers/product.controller.js";
+import upload from "../utils/multer.js";
 const router = Router();
-router.route("/addProduct").post(verifyJwt, addProduct);
+const Upload = upload.fields([
+  { name: "thumbnail", maxCount: 1 },
+  { name: "images", maxCount: 6 },
+]);
+router.route("/addProduct").post(Upload, addProduct);
 router.route("/deleteProduct/:productId").post(deleteProduct);
 router.route("/updateProduct").patch(updateProductDetails);
 router.route("/deleteProductImage").patch(deleteProductImage);
 router.route("/addProductImage").patch(addProductImage);
-router.route("/search").get(searchProducts);
+router.route("/search").post(searchProducts);
 router.route("/:productId").get(getProductDetails);
 router.route("/changeThumbnail").patch(changeProductThumbnail);
 export default router;

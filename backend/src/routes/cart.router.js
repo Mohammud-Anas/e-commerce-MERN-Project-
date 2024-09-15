@@ -4,11 +4,11 @@ import {
   changeCartItemQuantity,
   deleteCartItem,
   getCartItems,
-} from "../controllers/cart.controller";
-import { verifyJwt } from "../middlewares/auth.middlware";
+} from "../controllers/cart.controller.js";
+
 const router = Router();
-router.route("/allCartItems").get(verifyJwt, getCartItems);
-router.route("/deleteCartItem/:cartItemId").post(deleteCartItem);
+router.route("/allCartItems/:userId").get(getCartItems);
+router.route("/deleteCartItem").post(deleteCartItem);
 router.route("/changeQuantity").post(changeCartItemQuantity);
-router.route("/addToCart").post(verifyJwt, addItemsToCart);
+router.route("/addToCart").post(addItemsToCart);
 export default router;

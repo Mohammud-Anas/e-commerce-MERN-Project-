@@ -12,5 +12,5 @@ sellerRouter.route("/register").post(registerSeller);
 sellerRouter.route("/logout").post(verifyJwt, logoutSeller);
 sellerRouter.route("/login").post(loginSeller);
 sellerRouter.route("/changePassword").post(verifyJwt, changePasword);
-sellerRouter.route("/addProducts").post();
+
 export default sellerRouter;
