@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
-import { promises as fs } from "fs";
+import { promises as fsPromises } from "fs";
 import { ApiError } from "./ApiError.js";
 dotenv.config({
   path: "./.env",
@@ -10,14 +10,22 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
+// New function to delete local file after uploading to Cloudinary
+const deleteLocalFile = async (filePath) => {
+  try {
+    await fsPromises.unlink(filePath); // Delete the file from the local storage
+    console.log(`Successfully deleted file: ${filePath}`);
+  } catch (error) {
+    console.error(`Error deleting file: ${filePath}`, error);
+  }
+};
 const uploadSingleImage = async (filePath, folderName) => {
   try {
-    const fileBuffer = await fs.readFile(filePath);
+    const fileBuffer = await fsPromises.readFile(filePath);
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: folderName },
-        (error, result) => {
+        async (error, result) => {
           if (error) {
             reject(
               new ApiError(
@@ -27,6 +35,8 @@ const uploadSingleImage = async (filePath, folderName) => {
               )
             );
           } else {
+            // Delete the local file after successful upload
+            await deleteLocalFile(filePath); // <-- Added this line
             resolve(result);
           }
         }
